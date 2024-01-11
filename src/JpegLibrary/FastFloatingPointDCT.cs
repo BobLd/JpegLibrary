@@ -1,4 +1,6 @@
-﻿// Copyright (c) Six Labors and contributors.
+﻿// TODO - Use instead (MIT) https://www.nayuki.io/page/fast-discrete-cosine-transform-algorithms
+
+// Copyright (c) Six Labors and contributors.
 // Licensed under the Apache License, Version 2.0.
 
 #nullable enable

@@ -43,6 +43,11 @@ namespace JpegLibrary
         public JpegMarker StartOfFrame { get; set; }
 
         /// <summary>
+        /// Get Adobe application specific information.
+        /// </summary>
+        public JpegAdobeApplicationSpecific? AdobeApplicationSpecific { get; private set; }
+
+        /// <summary>
         /// Set JPEG stream content to decode.
         /// </summary>
         /// <param name="input">The JPEG stream.</param>
@@ -153,6 +158,9 @@ namespace JpegLibrary
                     break;
                 case JpegMarker.EndOfImage:
                     return false;
+                case JpegMarker.App14:
+                    ProcessAdobeApplicationSpecificMarker(ref reader);
+                    break;
                 default:
                     ProcessOtherMarker(ref reader);
                     break;
@@ -304,6 +312,26 @@ namespace JpegLibrary
                 ThrowInvalidDataException(reader.ConsumedByteCount - length + bytesConsumed, "Failed to parse scan header.");
             }
             return scanHeader;
+        }
+
+        private void ProcessAdobeApplicationSpecificMarker(ref JpegReader reader)
+        {
+            if (!reader.TryReadLength(out ushort length))
+            {
+                ThrowInvalidDataException(reader.ConsumedByteCount,
+                    "Unexpected end of input data when reading segment length.");
+            }
+
+            if (!reader.TryReadBytes(length, out ReadOnlySequence<byte> buffer))
+            {
+                ThrowInvalidDataException(reader.ConsumedByteCount,
+                    "Unexpected end of input data when reading segment content.");
+            }
+
+            if (JpegAdobeApplicationSpecific.TryParse(buffer, out JpegAdobeApplicationSpecific? adobeData))
+            {
+                AdobeApplicationSpecific = adobeData;
+            }
         }
 
         /// <summary>
